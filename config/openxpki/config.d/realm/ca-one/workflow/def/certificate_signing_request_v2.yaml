@@ -78,7 +78,14 @@ state:
         action:
           - global_noop > KEY_DUPLICATE_ERROR_CERTIFICATE ? has_duplicate_key_certificate
           - global_noop2 > KEY_DUPLICATE_ERROR_WORKFLOW ? has_duplicate_key_workflow !has_duplicate_key_certificate
-          - global_noop3 > ENTER_SUBJECT ? !has_duplicate_key_workflow !has_duplicate_key_certificate
+          - global_noop3 > ENTER_CSR_INFO ? !has_duplicate_key_workflow !has_duplicate_key_certificate
+
+    ENTER_CSR_INFO:
+        label: CSR INFO
+        description: CSR INFO
+        action:
+           - edit_csr_info > ENTER_SUBJECT ? profile_has_csr_section
+           - global_skip > ENTER_SUBJECT ? !profile_has_csr_section
 
     ENTER_CERT_INFO:
         label: I18N_OPENXPKI_UI_WORKFLOW_STATE_CSR_ENTER_CERT_INFO_LABEL
@@ -235,6 +242,7 @@ state:
           - notafter
           - cert_profile
           - cert_info
+          - csr_attributes_parts
         button:
           release_on_hold:
             format: expected
@@ -246,6 +254,7 @@ state:
         label: I18N_OPENXPKI_UI_WORKFLOW_STATE_CSR_PENDING_LABEL
         description: I18N_OPENXPKI_UI_WORKFLOW_STATE_CSR_PENDING_DESC
         action:
+          - edit_csr_info > UPDATE_REQUEST ? profile_has_csr_section acl_can_approve
           - edit_subject > UPDATE_REQUEST ? acl_can_approve
           - edit_san > UPDATE_REQUEST ? profile_has_san_section acl_can_approve
           - edit_cert_info > UPDATE_REQUEST ? profile_has_info_section acl_can_approve
@@ -265,8 +274,12 @@ state:
           - notafter
           - cert_profile
           - cert_info
+          - csr_attributes_parts
+
 #          - approval_count
         button:
+          edit_csr:
+            format: optional
           edit_subject:
             format: optional
           edit_san:
@@ -288,7 +301,7 @@ state:
     PERSIST_KEY_PASSWORD:
         autorun: 1
         action:
-          - persist_key_password > ENTER_SUBJECT ? has_password_in_context
+          - persist_key_password > ENTER_CSR_INFO ? has_password_in_context
           - global_noop > ENTER_KEY_PASSWORD ? !has_password_in_context
           # the condition catches interrupted workflows when the vault was not avail
 
@@ -481,6 +494,15 @@ action:
         param:
             ds_key_param: workflow_id
             ds_namespace: workflow.csr.keygen_password
+
+    edit_csr_info:
+        class: OpenXPKI::Server::Workflow::Activity::Tools::SetSource
+        uihandle: OpenXPKI::Client::UI::Handle::Profile::render_subject_form
+        label: Edit CSR Attributes
+        input:
+           - csr_attributes_parts
+        param:
+           source: USER
 
     edit_cert_info:
         class: OpenXPKI::Server::Workflow::Activity::Tools::SetSource
@@ -812,6 +834,13 @@ condition:
         param:
             _map_config_path: profile.[% context.cert_profile %].style.[% context.cert_subject_style %].ui.san
 
+    profile_has_csr_section:
+        class: OpenXPKI::Server::Workflow::Condition::Connector::Exists
+        param:
+            _map_config_path: profile.[% context.cert_profile %].style.[% context.cert_subject_style %].ui.csrattr
+
+
+
     profile_has_info_section:
         class: OpenXPKI::Server::Workflow::Condition::Connector::Exists
         param:
@@ -835,6 +864,13 @@ field:
         # The options are provided by the uihandle class!
         required: 1
         template: "[% USE Profile %][% Profile.name(value) %]"
+
+
+    csr_attributes_parts:
+        label: CSR Attribues
+        name: csr_attributes_parts
+        type: cert_csrattr
+        required: 0
 
     cert_san_parts:
         label: I18N_OPENXPKI_UI_WORKFLOW_FIELD_CERT_SAN_PARTS_LABEL
