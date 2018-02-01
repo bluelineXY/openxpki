@@ -228,6 +228,7 @@ OpenXPKI/Server/API2/EasyPluginRole.pm
 OpenXPKI/Server/API2/Plugin/Cert/Actions.pm
 OpenXPKI/Server/API2/Plugin/Cert/search_cert.pm
 OpenXPKI/Server/API2/PluginRole.pm
+OpenXPKI/Server/API2/Autoloader.pm
 OpenXPKI/Server/Context.pm
 OpenXPKI/Server/Init.pm
 OpenXPKI/Server/Session.pm
