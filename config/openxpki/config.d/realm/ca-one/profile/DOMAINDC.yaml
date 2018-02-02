@@ -1,0 +1,106 @@
+# The name of the file equals the name of the profile
+label: Domain Controller
+
+validity:
+    notafter: +0006
+
+style:
+    00_basic_style:
+        label: I18N_OPENXPKI_UI_PROFILE_ADVANCED_STYLE_LABEL
+        description: I18N_OPENXPKI_UI_PROFILE_ADVANCED_STYLE_DESC
+        ui:
+            csrattr:
+                - csr_templatename
+            subject:
+                - cn
+                - o
+                - ou
+                - st
+                - c
+            san:
+                - san_dns
+                - san_othername
+
+#            info:
+#                - requestor_template
+#                - requestor_gname
+#                - requestor_name
+#                - requestor_email
+#                - requestor_affiliation
+#                - comment
+
+        subject:
+            dn: CN=[% CN %][% IF OU %][% FOREACH entry = OU %],OU=[% entry %][% END %][% END %][% IF O %],O=[% O %][% END %][% FOREACH entry = ST %],ST=[% entry %][% END %][% IF C %],C=[% C %][% END %]
+            san:
+               DNS:
+                   - "[% dns.lower %]"
+
+
+    enroll:
+        subject:
+            dn: CN=[% CN.0 %],DC=Test Deployment,DC=OpenXPKI,DC=org
+
+        metadata:
+            system_id: "[% data.cust_id %]"
+            server_id: "[% data.server_id %]"
+            entity: "[% CN.0 FILTER lower %]"
+
+# Profile extensions - set 0/1 as needed
+# Also see sections defined in default.yaml
+extensions:
+
+    templatename:
+        text: "ASN1:UTF8String:DomainController"
+        critical: 1
+
+    key_usage:
+        critical: 1
+        digital_signature: 1
+        non_repudiation:   0 
+        key_encipherment:  1
+        data_encipherment: 0
+        key_agreement:     0
+        key_cert_sign:     0
+        crl_sign:          0
+        encipher_only:     0
+        decipher_only:     0
+
+    extended_key_usage:
+        critical: 1
+        # these are OIDs, some OIDs are known and have names
+        client_auth:      1
+        server_auth:      1
+        email_protection: 0
+        code_signing:     0
+        time_stamping:    0
+        # mskdc
+        1.3.6.1.5.2.3.5:  1
+
+
+    # This is really outdated and should not be used unless really necessary
+    netscape:
+        comment:
+            critical: 0
+            text: Domaincontroller Certificate
+
+        certificate_type:
+            critical: 0
+            ssl_client:        0
+            smime_client:      0
+            object_signing:    0
+            ssl_client_ca:     0
+            smime_client_ca:   0
+            object_signing_ca: 0
+            # server cert
+            1.3.6.1.5.5.7.3.1: 1
+
+        cdp:
+            critical: 0
+            uri: http://192.168.56.4/crl.pem
+            ca_uri: http://192.168.56.4/crl.pem
+     # end of netscape section
+
+# end of extensions
+
+# Define the input fields you used below here
+#template:

@@ -1,0 +1,6 @@
+id: ST
+label: ST
+description: County
+preset: ST
+type: freetext
+width: 40

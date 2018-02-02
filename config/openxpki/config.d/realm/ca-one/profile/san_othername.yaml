@@ -1,0 +1,7 @@
+id: othername
+label: othername
+description: othername
+type: freetext
+width: 40
+min: 0
+max: 40
