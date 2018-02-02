@@ -336,7 +336,7 @@ sub __get_openssl_common
     $config .= "\n[ req ]\n\n".
                "utf8              = yes\n".
                "string_mask       = default\n".
-               "distinguished_name = dn_policy\n".
+               "distinguished_name = dn_policy\n";
 
     $config .= "\n[ dn_policy ]\n\n".
                "# this is a dummy because of preserve\n".
