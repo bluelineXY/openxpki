@@ -352,6 +352,15 @@ sub load_extension
                               CRITICAL => $critical,
                               VALUES   => [$ca_cdp]);
         }
+    } elsif( $ext eq "templatename"){
+        my $tname = $config->get("$path.text");
+        if ($tname)
+        {
+            $self->set_extension (NAME     => "templatename",
+                              CRITICAL => $critical,
+                              VALUES   => [ $tname ]);
+        }
+
     }
     else
     {

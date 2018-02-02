@@ -335,8 +335,8 @@ sub __get_openssl_common
 
     $config .= "\n[ req ]\n\n".
                "utf8              = yes\n".
-               "string_mask       = utf8only\n".
-               "distinguished_name = dn_policy\n";
+               "string_mask       = default\n".
+               "distinguished_name = dn_policy\n".
 
     $config .= "\n[ dn_policy ]\n\n".
                "# this is a dummy because of preserve\n".
@@ -361,6 +361,7 @@ sub __get_oids
         "joiST = 1.3.6.1.4.1.311.60.2.1.2\n".
         "jurisdictionOfIncorporationCountryName = 1.3.6.1.4.1.311.60.2.1.3 \n".
         "jOICountryName = 1.3.6.1.4.1.311.60.2.1.3 \n".
+        "jTemplateName = 1.3.6.1.4.1.311.20.2 \n".
         "joiC = 1.3.6.1.4.1.311.60.2.1.3 \n";
 }
 
@@ -614,8 +615,8 @@ sub __get_extensions
                 # only add keyUsage to config if configuration entries are present
                 $config .= "keyUsage = $critical";
                 $config .= "digitalSignature," if (grep /digital_signature/, @bits);
-            $config .= "nonRepudiation,"   if (grep /non_repudiation/,   @bits);
-            $config .= "keyEncipherment,"  if (grep /key_encipherment/,  @bits);
+                $config .= "nonRepudiation,"   if (grep /non_repudiation/,   @bits);
+                $config .= "keyEncipherment,"  if (grep /key_encipherment/,  @bits);
                 $config .= "dataEncipherment," if (grep /data_encipherment/, @bits);
                 $config .= "keyAgreement,"     if (grep /key_agreement/,     @bits);
                 $config .= "keyCertSign,"      if (grep /key_cert_sign/,     @bits);
@@ -631,25 +632,34 @@ sub __get_extensions
             my $subj_alt_name = $profile->get_extension("subject_alt_name");
             my @tmp_array;
             my $sectidx = 0;
-            my $string;
+            my $idx=0;
+            my $subjAltNameSection = "\n[ subjAltSectionMaster ]\n";
             foreach my $entry (@{$subj_alt_name}) {
-
+		$idx++;
                 # Handle dirName
                 if ($entry->[0] eq 'dirName') {
                     # split at comma, this has the side effect that we can
                     # not handle DNs with comma in the subparts
                     my @tt = split(/,/, $entry->[1]);
+                    my $tidx = 0;
                     $sectidx++;
-                    $sections .= "\n[dirname_sect_${sectidx}]\n" . join("\n", @tt). "\n";
-                    push @tmp_array, "dirName:dirname_sect_${sectidx}";
+                    $sections .= "\n[ dirname_sect_${sectidx} ]\n";
+		    foreach my $ddata (@tt){
+			$sections .= $tidx.".".$ddata."\n";
+		    }
+                    $sections .= "\n";
+                    push @tmp_array, "dirName.".${sectidx}."=dirname_sect_${sectidx}";
                 } else {
-                    push @tmp_array, join(q{:}, @{$entry});
+                    # add index for each entry for multiple use
+                    $entry->[0] = $entry->[0].".".$idx;
+                    push @tmp_array, join(q{=}, @{$entry});
                 }
             }
 
-            my $string = join(q{,}, @tmp_array);
-            if ($string ne '') {
-                $config .= "subjectAltName=" . $string . "\n";
+            $subjAltNameSection .= join("\n", @tmp_array)."\n";
+            if ($subjAltNameSection ne '') {
+                $sections .= $subjAltNameSection;
+                $config .= "subjectAltName=\@subjAltSectionMaster\n";
             }
         }
         elsif ($name eq "subject_key_identifier")
@@ -688,10 +698,12 @@ sub __get_extensions
         {
             $config .= "nsComment = $critical\"";
             my $string =  join ("", @{$profile->get_extension("netscape.comment")});
-        # FIXME: this inserts a literal \n - is this intended?
-        $string =~ s/\n/\\\\n/g;
+            # FIXME: this inserts a literal \n - is this intended?
+            $string =~ s/\n/\\\\n/g;
             $config .= "$string\"\n";
-        }
+        } elsif ($name eq "templatename"){
+           $config .= "jTemplateName = ". join ("", @{$profile->get_extension("templatename")})."\n";
+	}
         else
         {
             OpenXPKI::Exception->throw (
