@@ -30,6 +30,7 @@ addons:
     - openssl
     - libssl-dev
     - pkg-config
+    - cpanminus
   mariadb: '10.1'
 
 #
