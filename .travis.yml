@@ -1,8 +1,8 @@
 # We use our own Perl setup (language "generic" uses a stripped-down TravisCI image)
 language: generic
 
-# Ubuntu 14.04 "Trusty"
-dist: trusty
+# Ubuntu 16.04 LTS "Xenial"
+dist: xenial
 # Run in Docker container instead of VM - currently (2016-12-14) beta for "trusty"
 sudo: required
 
