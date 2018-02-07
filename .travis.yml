@@ -1,5 +1,5 @@
 # We use our own Perl setup (language "generic" uses a stripped-down TravisCI image)
-language: perl
+language: generic
 
 # Ubuntu 16.04 LTS "Xenial"
 dist: xenial
@@ -56,7 +56,6 @@ install:
     - ./tools/scripts/makefile2cpanfile.pl > ./cpanfile
     - cpanm --quiet --notest --installdeps ./
     - cpanm --quiet --notest --reinstall Devel::Cover
-    - cpanm --quiet --notest --reinstall DBD::mysql
         # "--reinstall" needed for Devel::Cover because we told TravisCI to cache ~/perl5/lib/perl5
         # but not ~/perl5/bin - so on next run the "cover" script will be gone
     - cpanm --quiet --notest Devel::Cover::Report::Coveralls
