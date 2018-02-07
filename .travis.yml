@@ -32,6 +32,7 @@ addons:
     - pkg-config
     - cpanminus
     - cmdtest
+    - libdbd-mysql-perl
   mariadb: '10.1'
 
 #
