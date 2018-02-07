@@ -2,7 +2,7 @@
 language: perl
 
 # Ubuntu 16.04 LTS "Xenial"
-dist: trusty
+dist: xenial
 # Run in Docker container instead of VM - currently (2016-12-14) beta for "trusty"
 sudo: required
 
